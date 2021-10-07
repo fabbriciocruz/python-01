@@ -1,0 +1,34 @@
+# Python Web application deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-01
+  template:
+    metadata:
+      labels:
+        app: python-01
+    spec:
+      containers:
+        - name: python-01
+          image: fcruzdockerhub/python-01:latest
+          ports:
+            - containerPort: 5000
+---
+# Python Web application Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-01
+spec:
+  selector:
+    app: python-01
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30001
+  type: NodePort

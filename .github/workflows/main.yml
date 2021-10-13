@@ -1,7 +1,9 @@
-# Python-01 Tue Oct 12 22:16:19 -03 2021
+# Python-01
+
 name: CI-CD
 
 on:
+
   push:
     branches: [ main ]
   workflow_dispatch:
@@ -15,4 +17,27 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PWD }}
-
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v2.7.0
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            fcruzdockerhub/python-01:latest
+            fcruzdockerhub/python-01:${{ github.run_number }}
+  CD:
+    needs: [CI]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy
+        uses: safe2008/eks-actions@v0.0.4
+        env:
+          aws_access_key_id: ${{ secrets.K8SADMIN01_KEY }}
+          aws_secret_access_key: ${{ secrets.K8SADMIN01_SEC }}
+          aws_region: sa-east-1
+          cluster_name: eksworkshop-eksctl
+        with:
+          args: |
+            kubectl apply -f awsEks/deployment.yaml       
